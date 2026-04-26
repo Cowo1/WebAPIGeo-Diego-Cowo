@@ -6,7 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -23,14 +27,28 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Configurar logging detallado
+app.UseExceptionHandler(errorApp =>
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(); // Accedes vía /scalar/v1
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
 
-}
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = 500;
 
+        await context.Response.WriteAsJsonAsync(new 
+        { 
+            error = exception?.Message,
+            stackTrace = exception?.StackTrace,
+            type = exception?.GetType().Name
+        });
+    });
+});
+
+app.MapOpenApi();
+app.MapScalarApiReference(); // Accedes vía /scalar/v1
 
 app.UseHttpsRedirection();
 
