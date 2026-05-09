@@ -6,6 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(policy => {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -46,6 +54,12 @@ app.UseExceptionHandler(errorApp =>
         });
     });
 });
+
+app.UseCors();
+
+// Servir archivos estáticos desde wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapOpenApi();
 app.MapScalarApiReference(); // Accedes vía /scalar/v1

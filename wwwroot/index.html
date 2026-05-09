@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGTH - Sistema de Gestión de Triaje Hospitalario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-hospital"></i> SGTH - Hospital General
+            </span>
+            <span class="navbar-text text-white">Sistema de Gestión de Triaje Hospitalario</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar + Main Content -->
+    <div class="container-fluid">
+        <div class="row" style="min-height: 100vh;">
+            <!-- Sidebar -->
+            <div class="col-md-3 bg-light p-0 sidebar">
+                <div class="list-group list-group-flush">
+                    <button class="list-group-item list-group-item-action active tab-btn" data-tab="dashboard">
+                        <i class="bi bi-graph-up"></i> Ver Pacientes
+                    </button>
+                    <button class="list-group-item list-group-item-action tab-btn" data-tab="registro">
+                        <i class="bi bi-plus-circle"></i> Nuevo Registro
+                    </button>
+                    <button class="list-group-item list-group-item-action tab-btn" data-tab="ayuda">
+                        <i class="bi bi-question-circle"></i> Ayuda
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 p-4">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="bi bi-table"></i> Tablero de Pacientes</h2>
+                        <button class="btn btn-success" id="btn-refresh">
+                            <i class="bi bi-arrow-clockwise"></i> Actualizar
+                        </button>
+
+                    </div>
+                    <h2>1890 -24 - 20453, 1890 - 24 -22310</h2>
+                    <!-- Estadísticas -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Críticos</h6>
+                                    <h3 id="count-criticos">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Graves</h6>
+                                    <h3 id="count-graves">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Moderados</h6>
+                                    <h3 id="count-moderados">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Total</h6>
+                                    <h3 id="count-total">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Pacientes -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="loading" class="text-center d-none">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                            <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="tabla-pacientes">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID Paciente</th>
+                                            <th>Nombre</th>
+                                            <th>Edad</th>
+                                            <th>Gravedad</th>
+                                            <th>Estado</th>
+                                            <th>Médico</th>
+                                            <th>Fecha Ingreso</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-pacientes">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="sin-pacientes" class="alert alert-info text-center d-none">
+                                No hay pacientes registrados
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registro Tab -->
+                <div id="registro" class="tab-content d-none">
+                    <h2><i class="bi bi-form-check"></i> Registrar Nuevo Paciente</h2>
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <form id="form-paciente">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nombre" class="form-label">Nombre del Paciente *</label>
+                                        <input type="text" class="form-control" id="nombre" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="edad" class="form-label">Edad *</label>
+                                        <input type="number" class="form-control" id="edad" min="1" max="120" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="gravedad" class="form-label">Nivel de Gravedad * (1-5)</label>
+                                        <select class="form-select" id="gravedad" required>
+                                            <option value="">-- Seleccionar --</option>
+                                            <option value="1">1 - Estable</option>
+                                            <option value="2">2 - Leve</option>
+                                            <option value="3">3 - Moderado</option>
+                                            <option value="4">4 - Grave</option>
+                                            <option value="5">5 - Crítico</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="estado" class="form-label">Estado *</label>
+                                        <select class="form-select" id="estado" required>
+                                            <option value="">-- Seleccionar --</option>
+                                            <option value="En espera">En espera</option>
+                                            <option value="Atendido">Atendido</option>
+                                            <option value="Derivado">Derivado</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="medico" class="form-label">Carnet del Médico Responsable *</label>
+                                    <select class="form-select" id="medico" required>
+                                        <option value="">-- Seleccionar Médico --</option>
+                                        <option value="MED-1010">MED-1010 - Dr. García</option>
+                                        <option value="MED-2020">MED-2020 - Dra. López</option>
+                                        <option value="MED-3030">MED-3030 - Dr. Martínez</option>
+                                        <option value="MED-4040">MED-4040 - Dra. Rodríguez</option>
+                                        <option value="MED-5050">MED-5050 - Dr. Pérez</option>
+                                    </select>
+                                </div>
+
+                                <div id="alert-registro" class="alert d-none" role="alert"></div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Registrar Paciente
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ayuda Tab -->
+                <div id="ayuda" class="tab-content d-none">
+                    <h2><i class="bi bi-question-circle"></i> Ayuda</h2>
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5>Escala de Gravedad:</h5>
+                            <ul>
+                                <li><strong>1 - Estable:</strong> Paciente sin síntomas graves</li>
+                                <li><strong>2 - Leve:</strong> Síntomas leves que no requieren atención inmediata</li>
+                                <li><strong>3 - Moderado:</strong> Requiere atención en tiempo razonable</li>
+                                <li><strong>4 - Grave:</strong> Requiere atención urgente</li>
+                                <li><strong>5 - Crítico:</strong> Estado crítico, riesgo vital (Máximo 5 en espera)</li>
+                            </ul>
+
+                            <hr>
+
+                            <h5>Médicos Autorizados:</h5>
+                            <ul>
+                                <li>MED-1010 - Dr. García</li>
+                                <li>MED-2020 - Dra. López</li>
+                                <li>MED-3030 - Dr. Martínez</li>
+                                <li>MED-4040 - Dra. Rodríguez</li>
+                                <li>MED-5050 - Dr. Pérez</li>
+                            </ul>
+
+                            <hr>
+
+                            <h5>Sistema de Priorización:</h5>
+                            <p>El tablero ordena automáticamente los pacientes por:</p>
+                            <ol>
+                                <li>Nivel de gravedad (5 → 1)</li>
+                                <li>A igual gravedad, el más antiguo tiene prioridad</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
